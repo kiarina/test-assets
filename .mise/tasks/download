@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # mise description: Download and extract shared test assets
+# For detailed documentation, see: https://github.com/kiarina/test-assets
 # Usage: mise run download [--output-dir <dir>] <release-version> <project-name> <assets-version>
 # Example: mise run download v2025.09 kiarina-python v1.0.0
 

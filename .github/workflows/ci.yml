@@ -1,5 +1,8 @@
 name: CI
 
+# For detailed documentation on how to manage and use these test assets, see:
+# https://github.com/kiarina/test-assets
+
 on:
   push:
   pull_request:
