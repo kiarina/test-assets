@@ -74,25 +74,27 @@ if ls "$RELEASE_DIR"/*.tar.zst 1> /dev/null 2>&1; then
     (cd "$RELEASE_DIR" && sha256sum *.tar.zst > SHA256SUMS)
 fi
 
-# Copy MANIFEST.md if it exists, otherwise create a stub
+# Update Uncompressed Size in src/MANIFEST.md dynamically
 if [ -f "$SRC_DIR/MANIFEST.md" ]; then
-    cp "$SRC_DIR/MANIFEST.md" "$RELEASE_DIR/MANIFEST.md"
-    echo "Copied MANIFEST.md"
-    
-    # Replace uncompressed size placeholders dynamically
+    echo "Updating sizes in MANIFEST.md..."
     for asset_dir in "$SRC_DIR"/*; do
         if [ -d "$asset_dir" ]; then
             asset_name=$(basename "$asset_dir")
-            # Extract project name (e.g., kiarina-python-assets-v1.0.0 -> kiarina-python)
-            project_name=$(echo "$asset_name" | sed -E 's/-assets-v?.*//')
-            
-            # Calculate size using du -sh
             size=$(du -sh "$asset_dir" | awk '{print $1}')
             
-            # Replace placeholder in MANIFEST.md (macOS sed requires -i '')
-            sed -i '' -e "s/{${project_name}-uncompressed-size}/${size}/g" "$RELEASE_DIR/MANIFEST.md"
+            # Use awk to find the specific asset section and update its size regardless of current value
+            awk -v asset="## $asset_name.tar.zst" -v new_size="- **Uncompressed Size**: $size" '
+            $0 == asset { in_asset=1; print; next }
+            /^## / { in_asset=0 }
+            in_asset && /^- \*\*Uncompressed Size\*\*:/ { print new_size; next }
+            { print }
+            ' "$SRC_DIR/MANIFEST.md" > "$SRC_DIR/MANIFEST.md.tmp"
+            mv "$SRC_DIR/MANIFEST.md.tmp" "$SRC_DIR/MANIFEST.md"
         fi
     done
+    
+    cp "$SRC_DIR/MANIFEST.md" "$RELEASE_DIR/MANIFEST.md"
+    echo "Copied MANIFEST.md"
 else
     echo "# MANIFEST for $VERSION" > "$RELEASE_DIR/MANIFEST.md"
     echo "Auto-generated manifest. Please update with asset details." >> "$RELEASE_DIR/MANIFEST.md"
