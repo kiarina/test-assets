@@ -71,6 +71,9 @@ fi
 
 echo "Cleaning up..."
 rm -rf "$TMP_DIR"
+# Remove parent directories if they are empty
+rmdir tmp/setup 2>/dev/null || true
+rmdir tmp 2>/dev/null || true
 
 echo "======================================"
 echo "Setup complete! The src/ directory has been reconstructed."
