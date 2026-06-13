@@ -102,7 +102,7 @@ else
 - **Project**: ${PROJECT_NAME}
 - **Version**: ${ASSET_VERSION}
 - **Description**: 
-- **Uncompressed Size**: {${PROJECT_NAME}-uncompressed-size}
+- **Uncompressed Size**: 0B
 EOF
 fi
 
