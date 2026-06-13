@@ -7,23 +7,32 @@ VERSION=$1
 
 # Interactive prompt if version is not provided
 if [ -z "$VERSION" ]; then
-    echo "No version specified. Please select a version from src/:"
-    # Use array to safely handle paths (though they should be simple names like v2025.09)
-    versions=($(ls -1 src/ 2>/dev/null || true))
-    
-    if [ ${#versions[@]} -eq 0 ]; then
-        echo "Error: No versions found in src/"
-        exit 1
-    fi
-    
-    select v in "${versions[@]}"; do
-        if [ -n "$v" ]; then
-            VERSION=$v
-            break
-        else
-            echo "Invalid selection"
+    if command -v fzf &> /dev/null; then
+        echo "No version specified. Please select a version from src/:"
+        VERSION=$(ls -1 src/ 2>/dev/null | fzf --prompt="Select version: " || true)
+        if [ -z "$VERSION" ]; then
+            echo "Error: No version selected."
+            exit 1
         fi
-    done
+    else
+        echo "No version specified. Please select a version from src/:"
+        # Use array to safely handle paths (though they should be simple names like v2025.09)
+        versions=($(ls -1 src/ 2>/dev/null || true))
+        
+        if [ ${#versions[@]} -eq 0 ]; then
+            echo "Error: No versions found in src/"
+            exit 1
+        fi
+        
+        select v in "${versions[@]}"; do
+            if [ -n "$v" ]; then
+                VERSION=$v
+                break
+            else
+                echo "Invalid selection"
+            fi
+        done
+    fi
 fi
 
 echo "======================================"
@@ -69,6 +78,21 @@ fi
 if [ -f "$SRC_DIR/MANIFEST.md" ]; then
     cp "$SRC_DIR/MANIFEST.md" "$RELEASE_DIR/MANIFEST.md"
     echo "Copied MANIFEST.md"
+    
+    # Replace uncompressed size placeholders dynamically
+    for asset_dir in "$SRC_DIR"/*; do
+        if [ -d "$asset_dir" ]; then
+            asset_name=$(basename "$asset_dir")
+            # Extract project name (e.g., kiarina-python-assets-v1.0.0 -> kiarina-python)
+            project_name=$(echo "$asset_name" | sed -E 's/-assets-v?.*//')
+            
+            # Calculate size using du -sh
+            size=$(du -sh "$asset_dir" | awk '{print $1}')
+            
+            # Replace placeholder in MANIFEST.md (macOS sed requires -i '')
+            sed -i '' -e "s/{${project_name}-uncompressed-size}/${size}/g" "$RELEASE_DIR/MANIFEST.md"
+        fi
+    done
 else
     echo "# MANIFEST for $VERSION" > "$RELEASE_DIR/MANIFEST.md"
     echo "Auto-generated manifest. Please update with asset details." >> "$RELEASE_DIR/MANIFEST.md"

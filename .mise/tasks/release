@@ -7,23 +7,32 @@ VERSION=$1
 
 # Interactive prompt if version is not provided
 if [ -z "$VERSION" ]; then
-    echo "No version specified. Please select a version from release/:"
-    # Use array to safely handle paths
-    versions=($(ls -1 release/ 2>/dev/null || true))
-    
-    if [ ${#versions[@]} -eq 0 ]; then
-        echo "Error: No versions found in release/ directory. Did you run the build task first?"
-        exit 1
-    fi
-    
-    select v in "${versions[@]}"; do
-        if [ -n "$v" ]; then
-            VERSION=$v
-            break
-        else
-            echo "Invalid selection"
+    if command -v fzf &> /dev/null; then
+        echo "No version specified. Please select a version from release/:"
+        VERSION=$(ls -1 release/ 2>/dev/null | fzf --prompt="Select version: " || true)
+        if [ -z "$VERSION" ]; then
+            echo "Error: No version selected."
+            exit 1
         fi
-    done
+    else
+        echo "No version specified. Please select a version from release/:"
+        # Use array to safely handle paths
+        versions=($(ls -1 release/ 2>/dev/null || true))
+        
+        if [ ${#versions[@]} -eq 0 ]; then
+            echo "Error: No versions found in release/ directory. Did you run the build task first?"
+            exit 1
+        fi
+        
+        select v in "${versions[@]}"; do
+            if [ -n "$v" ]; then
+                VERSION=$v
+                break
+            else
+                echo "Invalid selection"
+            fi
+        done
+    fi
 fi
 
 RELEASE_DIR="release/$VERSION"

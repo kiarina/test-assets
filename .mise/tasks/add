@@ -1,0 +1,93 @@
+#!/usr/bin/env bash
+# mise description: Add a new asset directory and manifest entry to a release
+# Usage: mise run add [release-version] <project-name> <asset-version>
+# Example: mise run add v2025.09 kiarina-python v1.0.0
+
+set -e
+
+if [ "$#" -eq 2 ]; then
+    VERSION=""
+    PROJECT_NAME=$1
+    ASSET_VERSION=$2
+elif [ "$#" -eq 3 ]; then
+    VERSION=$1
+    PROJECT_NAME=$2
+    ASSET_VERSION=$3
+else
+    echo "Usage: mise run add [release-version] <project-name> <asset-version>"
+    echo "Example: mise run add v2025.09 kiarina-python v1.0.0"
+    echo "         mise run add kiarina-python v1.0.0 (interactively select release-version)"
+    exit 1
+fi
+if [ -z "$VERSION" ]; then
+    if command -v fzf &> /dev/null; then
+        echo "Please select a release version from src/:"
+        VERSION=$(ls -1 src/ 2>/dev/null | fzf --prompt="Select release: " || true)
+        if [ -z "$VERSION" ]; then
+            echo "Error: No release selected."
+            exit 1
+        fi
+    else
+        echo "Please select a release version from src/:"
+        versions=($(ls -1 src/ 2>/dev/null || true))
+        if [ ${#versions[@]} -eq 0 ]; then
+            echo "Error: No versions found in src/"
+            exit 1
+        fi
+        select v in "${versions[@]}"; do
+            if [ -n "$v" ]; then
+                VERSION=$v
+                break
+            else
+                echo "Invalid selection"
+            fi
+        done
+    fi
+fi
+
+SRC_DIR="src/$VERSION"
+ASSET_NAME="${PROJECT_NAME}-assets-${ASSET_VERSION}"
+ASSET_DIR="$SRC_DIR/$ASSET_NAME"
+
+if [ ! -d "$SRC_DIR" ]; then
+    echo "Error: Release directory $SRC_DIR does not exist. Run 'mise run create $VERSION' first."
+    exit 1
+fi
+
+if [ -d "$ASSET_DIR" ]; then
+    echo "Warning: Asset directory $ASSET_DIR already exists."
+else
+    echo "Creating $ASSET_DIR..."
+    mkdir -p "$ASSET_DIR"
+fi
+
+MANIFEST="$SRC_DIR/MANIFEST.md"
+
+if [ ! -f "$MANIFEST" ]; then
+    echo "Warning: $MANIFEST does not exist. Creating a new one."
+    cat <<EOF > "$MANIFEST"
+# MANIFEST for $VERSION
+
+This manifest describes the assets included in this release.
+EOF
+fi
+
+# Check if already added
+if grep -q "## ${ASSET_NAME}.tar.zst" "$MANIFEST"; then
+    echo "Asset ${ASSET_NAME} already exists in MANIFEST.md"
+else
+    echo "Appending to $MANIFEST..."
+    cat <<EOF >> "$MANIFEST"
+
+---
+
+## ${ASSET_NAME}.tar.zst
+
+- **Project**: ${PROJECT_NAME}
+- **Version**: ${ASSET_VERSION}
+- **Description**: 
+- **Uncompressed Size**: {${PROJECT_NAME}-uncompressed-size}
+EOF
+fi
+
+echo "Done! You can now place files into $ASSET_DIR"

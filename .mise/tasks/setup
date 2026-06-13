@@ -12,14 +12,23 @@ if ! command -v gh &> /dev/null; then
 fi
 
 if [ -z "$VERSION" ]; then
-    echo "No version specified. Fetching the latest release..."
-    # Get latest release tag
-    VERSION=$(gh release list --exclude-drafts --exclude-pre-releases -L 1 | awk '{print $1}')
-    if [ -z "$VERSION" ]; then
-        echo "Error: Could not determine latest release."
-        exit 1
+    if command -v fzf &> /dev/null; then
+        echo "No version specified. Please select a release:"
+        VERSION=$(gh release list --exclude-drafts --exclude-pre-releases | fzf --prompt="Select release: " | awk '{print $1}')
+        if [ -z "$VERSION" ]; then
+            echo "Error: No release selected."
+            exit 1
+        fi
+    else
+        echo "No version specified. Fetching the latest release..."
+        # Get latest release tag
+        VERSION=$(gh release list --exclude-drafts --exclude-pre-releases -L 1 | awk '{print $1}')
+        if [ -z "$VERSION" ]; then
+            echo "Error: Could not determine latest release."
+            exit 1
+        fi
+        echo "Latest release found: $VERSION"
     fi
-    echo "Latest release found: $VERSION"
 fi
 
 SRC_DIR="src/$VERSION"
