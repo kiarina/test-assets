@@ -87,6 +87,11 @@ curl -L -o kiarina-python-assets-v1.0.0.tar.zst \
 
 If you are a maintainer of this repository, here is how you work with the assets.
 
+### 📸 The Snapshot Model
+
+This repository uses a **Snapshot Model**. Every new release should include **all** assets from the previous release, plus any new or updated assets. 
+**Never delete past releases on GitHub.** Consuming projects pin specific versions, and deleting past releases will break their CI pipelines. By inheriting past assets, we ensure that a single version tag contains everything a consumer might need at that point in time.
+
 ### ⚙️ Setup Workspace
 
 Since the actual asset files in `src/` are ignored by git to keep the repository lightweight, you will need to reconstruct the workspace after cloning this repository.
@@ -94,27 +99,41 @@ Since the actual asset files in `src/` are ignored by git to keep the repository
 To download and extract the latest assets back into the `src/` directory, run:
 ```sh
 mise run setup
-# or specify a version: mise run setup v2025.09
+# or interactively select a version: mise run setup
 ```
 This requires the GitHub CLI (`gh`) to be authenticated.
 
 ### 🚀 How to Release New Assets
 
-1. **Add Assets to Source**: 
-   Place your raw asset files in `src/{release-version}/{project-name}-assets-v{major}.{minor}.{patch}/`.
-2. **Update Manifest**: 
-   Update or create `src/{release-version}/MANIFEST.md` to describe the new assets.
+We provide helper tasks to make the snapshot model easy to maintain.
+
+1. **Create a New Release Workspace**:
+   Create a new version workspace. This will automatically download the latest release and copy its assets to the new version's directory to act as your baseline.
+   ```sh
+   mise run create v2025.10
+   # or run without arguments to be prompted
+   ```
+
+2. **Add a New Asset**:
+   Initialize a new asset directory and automatically append its entry to the `MANIFEST.md` file.
+   ```sh
+   mise run add v2025.10 kiarina-python v1.0.0
+   # You can then place your raw files into src/v2025.10/kiarina-python-assets-v1.0.0/
+   ```
+   *(Note: You can omit the version to select it interactively)*
+
 3. **Build the Release**:
-   Run the build command to generate the compressed `.tar.zst` and checksums.
+   Run the build command to generate the compressed `.tar.zst` and checksums. This will also automatically calculate the uncompressed size of your assets and inject it into the `MANIFEST.md`.
    ```sh
    make
-   # or specify the version directly: make v2025.09
+   # or specify the version directly: make v2025.10
    ```
+
 4. **Publish to GitHub**:
-   Upload the contents to GitHub Releases using the automated `release` task. This will create a new release (or update an existing one) using the GitHub CLI (`gh`).
+   Upload the contents to GitHub Releases using the automated `release` task.
    ```sh
    make release
-   # or specify the version directly: mise run release v2025.09
+   # or specify the version directly: mise run release v2025.10
    ```
 
 ---
