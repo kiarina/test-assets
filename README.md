@@ -107,9 +107,8 @@ This requires the GitHub CLI (`gh`) to be authenticated.
 
 We provide helper tasks to make the snapshot model easy to maintain.
 
-1. **Create a New Release Workspace**:
-   Create a new version workspace. This will automatically download the latest release and copy its assets to the new version's directory to act as your baseline.
 1. **Initialize a New Release Version**:
+   Create a new version workspace. This will automatically download the latest release and copy its assets to the new version's directory to act as your baseline.
    ```sh
    make create
    # You will be prompted to enter the new version (e.g., v2025.10)
