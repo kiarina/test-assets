@@ -120,7 +120,7 @@ We provide helper tasks to make the snapshot model easy to maintain.
    mise run add v2025.10 kiarina-python v1.0.0
    # You can then place your raw files into src/v2025.10/kiarina-python-assets-v1.0.0/
    ```
-   *(Note: You can omit the version to select it interactively)*
+   *(Note: You can also run `mise run add` without arguments to be prompted for everything interactively)*
 
 3. **Build the Release**:
    Run the build command to generate the compressed `.tar.zst` and checksums. This will also automatically calculate the uncompressed size of your assets and inject it into the `MANIFEST.md`.
