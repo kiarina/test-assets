@@ -22,14 +22,14 @@ fi
 if [ -z "$VERSION" ]; then
     if command -v fzf &> /dev/null; then
         echo "Please select a release version from src/:"
-        VERSION=$(ls -1 src/ 2>/dev/null | fzf --prompt="Select release: " || true)
+        VERSION=$(ls -1 src/ 2>/dev/null | sort -r | fzf --prompt="Select release: " || true)
         if [ -z "$VERSION" ]; then
             echo "Error: No release selected."
             exit 1
         fi
     else
         echo "Please select a release version from src/:"
-        versions=($(ls -1 src/ 2>/dev/null || true))
+        versions=($(ls -1 src/ 2>/dev/null | sort -r || true))
         if [ ${#versions[@]} -eq 0 ]; then
             echo "Error: No versions found in src/"
             exit 1
