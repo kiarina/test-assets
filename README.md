@@ -109,18 +109,18 @@ We provide helper tasks to make the snapshot model easy to maintain.
 
 1. **Create a New Release Workspace**:
    Create a new version workspace. This will automatically download the latest release and copy its assets to the new version's directory to act as your baseline.
+1. **Initialize a New Release Version**:
    ```sh
-   mise run create v2025.10
-   # or run without arguments to be prompted
+   make create
+   # You will be prompted to enter the new version (e.g., v2025.10)
    ```
 
-2. **Add a New Asset**:
-   Initialize a new asset directory and automatically append its entry to the `MANIFEST.md` file.
+2. **Add a New Asset Directory**:
    ```sh
-   mise run add v2025.10 kiarina-python v1.0.0
-   # You can then place your raw files into src/v2025.10/kiarina-python-assets-v1.0.0/
+   make add
+   # You will be prompted to select the release version, project name, and asset version.
+   # You can then place your raw files into the created directory.
    ```
-   *(Note: You can also run `mise run add` without arguments to be prompted for everything interactively)*
 
 3. **Build the Release**:
    Run the build command to generate the compressed `.tar.zst` and checksums. This will also automatically calculate the uncompressed size of your assets and inject it into the `MANIFEST.md`.
