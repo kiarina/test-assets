@@ -125,15 +125,14 @@ We provide helper tasks to make the snapshot model easy to maintain.
 3. **Build the Release**:
    Run the build command to generate the compressed `.tar.zst` and checksums. This will also automatically calculate the uncompressed size of your assets and inject it into the `MANIFEST.md`.
    ```sh
-   make
-   # or specify the version directly: make v2025.10
+   make build
+   # or rely on interactive prompts: make
    ```
 
 4. **Publish to GitHub**:
    Upload the contents to GitHub Releases using the automated `release` task.
    ```sh
    make release
-   # or specify the version directly: mise run release v2025.10
    ```
 
 ---
