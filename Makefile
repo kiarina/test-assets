@@ -1,8 +1,15 @@
-.PHONY: build default release
+.PHONY: setup create add build release download
 
-.DEFAULT_GOAL := default
+.DEFAULT_GOAL := build
 
-default: build
+setup:
+	@mise run setup
+
+create:
+	@mise run create
+
+add:
+	@mise run add
 
 build:
 	@mise run build
@@ -10,5 +17,5 @@ build:
 release:
 	@mise run release
 
-%:
-	@mise run build $*
+download:
+	@mise run download
