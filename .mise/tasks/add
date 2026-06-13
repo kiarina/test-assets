@@ -5,7 +5,11 @@
 
 set -e
 
-if [ "$#" -eq 2 ]; then
+if [ "$#" -eq 0 ]; then
+    VERSION=""
+    PROJECT_NAME=""
+    ASSET_VERSION=""
+elif [ "$#" -eq 2 ]; then
     VERSION=""
     PROJECT_NAME=$1
     ASSET_VERSION=$2
@@ -17,6 +21,7 @@ else
     echo "Usage: mise run add [release-version] <project-name> <asset-version>"
     echo "Example: mise run add v2025.09 kiarina-python v1.0.0"
     echo "         mise run add kiarina-python v1.0.0 (interactively select release-version)"
+    echo "         mise run add (interactively select all)"
     exit 1
 fi
 if [ -z "$VERSION" ]; then
@@ -42,6 +47,22 @@ if [ -z "$VERSION" ]; then
                 echo "Invalid selection"
             fi
         done
+    fi
+fi
+
+if [ -z "$PROJECT_NAME" ]; then
+    read -p "Enter project name (e.g. kiarina-python): " PROJECT_NAME
+    if [ -z "$PROJECT_NAME" ]; then
+        echo "Error: Project name cannot be empty."
+        exit 1
+    fi
+fi
+
+if [ -z "$ASSET_VERSION" ]; then
+    read -p "Enter asset version (e.g. v1.0.0): " ASSET_VERSION
+    if [ -z "$ASSET_VERSION" ]; then
+        echo "Error: Asset version cannot be empty."
+        exit 1
     fi
 fi
 
