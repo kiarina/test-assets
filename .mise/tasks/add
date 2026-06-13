@@ -101,7 +101,7 @@ else
 
 - **Project**: ${PROJECT_NAME}
 - **Version**: ${ASSET_VERSION}
-- **Description**: 
+- **Description**: Test assets for the ${PROJECT_NAME} project.
 - **Uncompressed Size**: 0B
 EOF
 fi
