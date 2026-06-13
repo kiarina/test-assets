@@ -72,7 +72,7 @@ if ! command -v tar &> /dev/null; then
     exit 1
 fi
 
-tar --use-compress-program=unzstd -xvf "$OUTPUT_DIR/$ASSET_FILENAME" -C "$OUTPUT_DIR"
+tar --use-compress-program=unzstd --strip-components=1 -xvf "$OUTPUT_DIR/$ASSET_FILENAME" -C "$OUTPUT_DIR"
 
 # Cleanup
 echo "Cleaning up..."
