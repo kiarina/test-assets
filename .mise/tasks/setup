@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+# mise description: Reconstruct the src/ directory from a GitHub release
+
+set -e
+
+VERSION=$1
+
+# Check if gh CLI is installed
+if ! command -v gh &> /dev/null; then
+    echo "Error: 'gh' CLI is not installed or not in PATH."
+    exit 1
+fi
+
+if [ -z "$VERSION" ]; then
+    echo "No version specified. Fetching the latest release..."
+    # Get latest release tag
+    VERSION=$(gh release list --exclude-drafts --exclude-pre-releases -L 1 | awk '{print $1}')
+    if [ -z "$VERSION" ]; then
+        echo "Error: Could not determine latest release."
+        exit 1
+    fi
+    echo "Latest release found: $VERSION"
+fi
+
+SRC_DIR="src/$VERSION"
+TMP_DIR="tmp/setup/$VERSION"
+
+echo "======================================"
+echo "Setting up src/ for version: $VERSION"
+echo "======================================"
+
+mkdir -p "$SRC_DIR"
+mkdir -p "$TMP_DIR"
+
+echo "Downloading release assets..."
+if ! gh release download "$VERSION" --dir "$TMP_DIR" --clobber; then
+    echo "Error: Failed to download release $VERSION."
+    rm -rf "$TMP_DIR"
+    exit 1
+fi
+
+echo "Extracting assets to $SRC_DIR..."
+# Flag to track if we found any archives
+found_archives=false
+
+for archive in "$TMP_DIR"/*.tar.zst; do
+    if [ -f "$archive" ]; then
+        found_archives=true
+        echo "Extracting $(basename "$archive")..."
+        tar --use-compress-program=unzstd -xvf "$archive" -C "$SRC_DIR"
+    fi
+done
+
+if [ "$found_archives" = false ]; then
+    echo "Warning: No .tar.zst archives found in release $VERSION."
+fi
+
+if [ -f "$TMP_DIR/MANIFEST.md" ]; then
+    echo "Restoring MANIFEST.md..."
+    cp "$TMP_DIR/MANIFEST.md" "$SRC_DIR/MANIFEST.md"
+fi
+
+echo "Cleaning up..."
+rm -rf "$TMP_DIR"
+
+echo "======================================"
+echo "Setup complete! The src/ directory has been reconstructed."

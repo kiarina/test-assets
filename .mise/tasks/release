@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+# mise description: Publish the built assets to GitHub Releases
+
+set -e
+
+VERSION=$1
+
+# Interactive prompt if version is not provided
+if [ -z "$VERSION" ]; then
+    echo "No version specified. Please select a version from release/:"
+    # Use array to safely handle paths
+    versions=($(ls -1 release/ 2>/dev/null || true))
+    
+    if [ ${#versions[@]} -eq 0 ]; then
+        echo "Error: No versions found in release/ directory. Did you run the build task first?"
+        exit 1
+    fi
+    
+    select v in "${versions[@]}"; do
+        if [ -n "$v" ]; then
+            VERSION=$v
+            break
+        else
+            echo "Invalid selection"
+        fi
+    done
+fi
+
+RELEASE_DIR="release/$VERSION"
+
+if [ ! -d "$RELEASE_DIR" ]; then
+    echo "Error: Directory $RELEASE_DIR does not exist. Please run 'make $VERSION' first."
+    exit 1
+fi
+
+echo "======================================"
+echo "Publishing release for version: $VERSION"
+echo "======================================"
+
+# Check if gh CLI is installed
+if ! command -v gh &> /dev/null; then
+    echo "Error: 'gh' CLI is not installed or not in PATH. Please install GitHub CLI."
+    exit 1
+fi
+
+# Determine if release exists
+if gh release view "$VERSION" >/dev/null 2>&1; then
+    echo "Release $VERSION already exists. Uploading new assets..."
+    # --clobber overwrites existing files with the same name
+    gh release upload "$VERSION" "$RELEASE_DIR"/* --clobber
+else
+    echo "Creating new release $VERSION..."
+    # Optionally use MANIFEST.md as release notes if it exists
+    NOTES_OPT=""
+    if [ -f "$RELEASE_DIR/MANIFEST.md" ]; then
+        NOTES_OPT="--notes-file $RELEASE_DIR/MANIFEST.md"
+    else
+        NOTES_OPT="--generate-notes"
+    fi
+    
+    gh release create "$VERSION" "$RELEASE_DIR"/* -t "$VERSION" $NOTES_OPT
+fi
+
+echo "======================================"
+echo "Successfully published $VERSION to GitHub Releases!"

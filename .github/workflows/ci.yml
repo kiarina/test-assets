@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Install mise (required to run the download script)
+      - name: Install mise
+        uses: jdx/mise-action@v2
+
+      # Restore assets cache if available
+      - name: Cache test assets
+        id: cache-assets
+        uses: actions/cache@v4
+        with:
+          path: tests/assets
+          # Tip: Bump the cache key version when assets are updated
+          key: test-assets-v2025.09
+
+      # Download and extract assets using the automated script
+      - name: Download test assets
+        if: steps.cache-assets.outputs.cache-hit != 'true'
+        run: mise run download v2025.09 kiarina-python v1.0.0
+
+      # Run your actual tests here
+      - name: Run tests
+        run: |
+          echo "Running tests with assets..."
+          # Example: pytest --assets-path tests/assets
+          ls -la tests/assets/ || true
