@@ -5,8 +5,16 @@
 
 set -e
 
+# -----------------------------------------------------------------------------
+# Configuration
+# -----------------------------------------------------------------------------
+# You can hardcode these values here so the script can be run without arguments.
 REPO="kiarina/test-assets"
+RELEASE_VERSION=""  # e.g. "v2026.06"
+PROJECT_NAME=""     # e.g. "my-project"
+ASSETS_VERSION=""   # e.g. "v1.0.0"
 OUTPUT_DIR="tests/assets"
+# -----------------------------------------------------------------------------
 
 # Parse arguments
 POSITIONAL_ARGS=()
@@ -20,15 +28,18 @@ done
 
 set -- "${POSITIONAL_ARGS[@]}"
 
-if [ "$#" -lt 3 ]; then
+# Override with positional arguments if provided
+if [ "$#" -ge 1 ]; then RELEASE_VERSION=$1; fi
+if [ "$#" -ge 2 ]; then PROJECT_NAME=$2; fi
+if [ "$#" -ge 3 ]; then ASSETS_VERSION=$3; fi
+
+if [ -z "$RELEASE_VERSION" ] || [ -z "$PROJECT_NAME" ] || [ -z "$ASSETS_VERSION" ]; then
     echo "Usage: mise run download [--output-dir <dir>] <release-version> <project-name> <assets-version>"
     echo "Example: mise run download v2025.09 kiarina-python v1.0.0"
+    echo ""
+    echo "Alternatively, you can edit the variables at the top of this script to run without arguments."
     exit 1
 fi
-
-RELEASE_VERSION=$1
-PROJECT_NAME=$2
-ASSETS_VERSION=$3
 
 ASSET_FILENAME="${PROJECT_NAME}-assets-${ASSETS_VERSION}.tar.zst"
 DOWNLOAD_URL="https://github.com/${REPO}/releases/download/${RELEASE_VERSION}/${ASSET_FILENAME}"
