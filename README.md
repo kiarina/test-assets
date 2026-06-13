@@ -98,8 +98,8 @@ Since the actual asset files in `src/` are ignored by git to keep the repository
 
 To download and extract the latest assets back into the `src/` directory, run:
 ```sh
-mise run setup
-# or interactively select a version: mise run setup
+make setup
+# or with arguments: mise run setup v2025.10
 ```
 This requires the GitHub CLI (`gh`) to be authenticated.
 

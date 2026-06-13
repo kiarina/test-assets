@@ -98,8 +98,8 @@ curl -L -o kiarina-python-assets-v1.0.0.tar.zst \
 
 GitHub Releases から最新のアセットをダウンロードし、`src/` ディレクトリを再構築するには以下のコマンドを実行してください：
 ```sh
-mise run setup
-# またはインタラクティブに選択: mise run setup
+make setup
+# または引数指定で実行: mise run setup v2025.10
 ```
 ※このコマンドを実行するには GitHub CLI (`gh`) の認証が必要です。
 
