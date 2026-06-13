@@ -25,11 +25,40 @@ fi
 echo "Creating $SRC_DIR..."
 mkdir -p "$SRC_DIR"
 
-cat <<EOF > "$SRC_DIR/MANIFEST.md"
+# Try to find the latest release
+echo "Checking for previous releases..."
+LATEST_VERSION=$(gh release list --exclude-drafts --exclude-pre-releases -L 1 2>/dev/null | awk '{print $1}' || true)
+
+if [ -n "$LATEST_VERSION" ] && [ "$LATEST_VERSION" != "$VERSION" ]; then
+    echo "Found previous release: $LATEST_VERSION"
+    echo "Running setup for $LATEST_VERSION to fetch existing assets..."
+    # Ensure gh CLI is authenticated and setup runs
+    if mise run setup "$LATEST_VERSION"; then
+        echo "Copying assets from $LATEST_VERSION to $VERSION..."
+        # Copy all contents including hidden files if any, but standard cp -r works for our structure
+        cp -r "src/$LATEST_VERSION/"* "$SRC_DIR/"
+        
+        # Update the MANIFEST header to reflect the new version
+        if [ -f "$SRC_DIR/MANIFEST.md" ]; then
+            sed -i '' -e "s/# MANIFEST for $LATEST_VERSION/# MANIFEST for $VERSION/g" "$SRC_DIR/MANIFEST.md"
+        fi
+        echo "Successfully inherited assets from $LATEST_VERSION!"
+    else
+        echo "Warning: Failed to setup $LATEST_VERSION. Starting with an empty release."
+        cat <<EOF > "$SRC_DIR/MANIFEST.md"
 # MANIFEST for $VERSION
 
 This manifest describes the assets included in this release.
 EOF
+    fi
+else
+    echo "No previous release found. Starting fresh."
+    cat <<EOF > "$SRC_DIR/MANIFEST.md"
+# MANIFEST for $VERSION
 
-echo "Created $SRC_DIR/MANIFEST.md"
+This manifest describes the assets included in this release.
+EOF
+fi
+
+echo "Created $SRC_DIR"
 echo "Done!"
