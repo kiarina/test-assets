@@ -45,15 +45,15 @@ v2025.09/
 
 提供されているテストアセットを、ご自身のプロジェクト内で自動的に取得・展開するためのスクリプトを用意しています。
 
-1. ご自身のプロジェクトに `.mise/tasks/download` を作成し、[こちらのスクリプト](https://github.com/kiarina/test-assets/blob/main/.mise/tasks/download) の内容をコピー＆ペーストしてください。
+1. ご自身のプロジェクトに `.mise/tasks/test-assets/download` を作成し、[こちらのスクリプト](https://github.com/kiarina/test-assets/blob/main/.mise/tasks/test-assets/download) の内容をコピー＆ペーストしてください。
 2. 以下のコマンドを実行すると、アセットのダウンロードと展開が行われます：
    ```sh
-   mise run download v2025.09 kiarina-python v1.0.0
+   mise run test-assets:download v2025.09 kiarina-python v1.0.0
    ```
    デフォルトでは `./tests/assets` に展開され、自動的に `.gitignore` に追記されます。
 3. 展開先ディレクトリを変更したい場合は、`--output-dir` フラグを使用します：
    ```sh
-   mise run download --output-dir ./my/custom/path v2025.09 kiarina-python v1.0.0
+   mise run test-assets:download --output-dir ./my/custom/path v2025.09 kiarina-python v1.0.0
    ```
 
 ### ⚡ GitHub Actions の例

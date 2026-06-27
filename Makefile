@@ -18,4 +18,4 @@ release:
 	@mise run release
 
 download:
-	@mise run download
+	@mise run test-assets:download

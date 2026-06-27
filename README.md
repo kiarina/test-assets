@@ -45,15 +45,15 @@ If you want to use these assets in your project, you have a few ways to download
 
 You can automate fetching the latest test assets directly within your own project by copying our ready-to-use download script.
 
-1. Create a `.mise/tasks/download` file in your project and copy the contents from [our download script](https://github.com/kiarina/test-assets/blob/main/.mise/tasks/download).
+1. Create a `.mise/tasks/test-assets/download` file in your project and copy the contents from [our download script](https://github.com/kiarina/test-assets/blob/main/.mise/tasks/test-assets/download).
 2. Run the task to download and extract the assets:
    ```sh
-   mise run download v2025.09 kiarina-python v1.0.0
+   mise run test-assets:download v2025.09 kiarina-python v1.0.0
    ```
    By default, this will extract the assets into `./tests/assets` and automatically add it to your `.gitignore`.
 3. To specify a different output directory, use the `--output-dir` flag:
    ```sh
-   mise run download --output-dir ./my/custom/path v2025.09 kiarina-python v1.0.0
+   mise run test-assets:download --output-dir ./my/custom/path v2025.09 kiarina-python v1.0.0
    ```
 
 ### ⚡ GitHub Actions Example

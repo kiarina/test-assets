@@ -29,7 +29,7 @@ jobs:
       # Download and extract assets using the automated script
       - name: Download test assets
         if: steps.cache-assets.outputs.cache-hit != 'true'
-        run: mise run download v2025.09 kiarina-python v1.0.0
+        run: mise run test-assets:download v2025.09 kiarina-python v1.0.0
 
       # Run your actual tests here
       - name: Run tests
