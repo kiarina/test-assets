@@ -56,6 +56,22 @@ You can automate fetching the latest test assets directly within your own projec
    mise run test-assets:download --output-dir ./my/custom/path v2025.09 kiarina-python v1.0.0
    ```
 
+### One-line Download Command
+
+Generate a copy-pasteable one-line command to download and extract an asset:
+
+```sh
+mise run test-assets:download-command
+```
+
+Example output:
+
+```sh
+set -o pipefail; mkdir -p assets && curl -fsSL https://github.com/kiarina/test-assets/releases/download/v2026.07/labs-assets-v1.0.0.tar.zst | tar --use-compress-program=unzstd --strip-components=1 -xf - -C assets
+```
+
+Requires the `curl`, `tar`, and `unzstd` commands.
+
 ### ⚡ GitHub Actions Example
 
 If your project uses GitHub Actions, we provide a complete, copy-pasteable example of how to cache and download the test assets in your CI pipeline using our download script.

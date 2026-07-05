@@ -56,6 +56,22 @@ v2025.09/
    mise run test-assets:download --output-dir ./my/custom/path v2025.09 kiarina-python v1.0.0
    ```
 
+### One-line Download Command
+
+アセットをダウンロードして展開する、コピー＆ペースト用のワンライナーを生成できます：
+
+```sh
+mise run test-assets:download-command
+```
+
+出力例：
+
+```sh
+set -o pipefail; mkdir -p assets && curl -fsSL https://github.com/kiarina/test-assets/releases/download/v2026.07/labs-assets-v1.0.0.tar.zst | tar --use-compress-program=unzstd --strip-components=1 -xf - -C assets
+```
+
+実行には `curl`、`tar`、`unzstd` コマンドが必要です。
+
 ### ⚡ GitHub Actions の例
 
 プロジェクトで GitHub Actions を使用している場合、CIパイプラインの中でダウンロードスクリプトを使ってテストアセットを取得・キャッシュする完全なサンプルを用意しています。

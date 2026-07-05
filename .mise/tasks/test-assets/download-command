@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+# mise description: Interactively generate a one-line test asset download command
+
+set -e
+
+REPO="${TEST_SETTINGS_REPO:-kiarina/test-assets}"
+RELEASE_VERSION="${TEST_SETTINGS_RELEASE_VERSION:-v2026.07}"
+PROJECT_NAME="${TEST_SETTINGS_PROJECT_NAME:-labs}"
+ASSETS_VERSION="${TEST_SETTINGS_ASSETS_VERSION:-v1.0.0}"
+OUTPUT_DIR="${TEST_SETTINGS_OUTPUT_DIR:-assets}"
+
+cat >&2 <<EOF
+Generate a one-line command that downloads and extracts test assets.
+Press Enter at each prompt to accept the displayed default.
+
+Defaults can be overridden with environment variables:
+  TEST_SETTINGS_REPO=$REPO
+  TEST_SETTINGS_RELEASE_VERSION=$RELEASE_VERSION
+  TEST_SETTINGS_PROJECT_NAME=$PROJECT_NAME
+  TEST_SETTINGS_ASSETS_VERSION=$ASSETS_VERSION
+  TEST_SETTINGS_OUTPUT_DIR=$OUTPUT_DIR
+
+EOF
+
+prompt_value() {
+    local variable_name=$1
+    local current_value=$2
+    local input
+
+    read -r -p "$variable_name [$current_value]: " input
+    printf -v "$variable_name" '%s' "${input:-$current_value}"
+}
+
+prompt_value REPO "$REPO"
+prompt_value RELEASE_VERSION "$RELEASE_VERSION"
+prompt_value PROJECT_NAME "$PROJECT_NAME"
+prompt_value ASSETS_VERSION "$ASSETS_VERSION"
+prompt_value OUTPUT_DIR "$OUTPUT_DIR"
+
+ASSET_FILENAME="${PROJECT_NAME}-assets-${ASSETS_VERSION}.tar.zst"
+DOWNLOAD_URL="https://github.com/${REPO}/releases/download/${RELEASE_VERSION}/${ASSET_FILENAME}"
+
+printf 'set -o pipefail; mkdir -p %q && curl -fsSL %q | tar --use-compress-program=unzstd --strip-components=1 -xf - -C %q\n' \
+    "$OUTPUT_DIR" "$DOWNLOAD_URL" "$OUTPUT_DIR"
