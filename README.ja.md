@@ -56,6 +56,8 @@ v2025.09/
    mise run test-assets:download --output-dir ./my/custom/path v2025.09 kiarina-python v1.0.0
    ```
 
+ダウンローダーはリクエストごとに一意なキャッシュバスターをクエリパラメータとして付与します。これにより、GitHub Release のアセットを差し替えた直後でも、CDN の古いレスポンスではなく最新のアセットを取得できます。
+
 ### One-line Download Command
 
 アセットをダウンロードして展開する、コピー＆ペースト用のワンライナーを生成できます：
@@ -67,10 +69,11 @@ mise run test-assets:download-command
 出力例：
 
 ```sh
-set -o pipefail; mkdir -p assets && curl -fsSL https://github.com/kiarina/test-assets/releases/download/v2026.07/labs-assets-v1.0.0.tar.zst | tar --use-compress-program=unzstd --strip-components=1 -xf - -C assets
+set -o pipefail; mkdir -p assets && curl -fsSL https://github.com/kiarina/test-assets/releases/download/v2026.07/labs-assets-v1.0.0.tar.zst\?cachebust="$(date +%s)-$$-$RANDOM" | tar --use-compress-program=unzstd --strip-components=1 -xf - -C assets
 ```
 
 実行には `curl`、`tar`、`unzstd` コマンドが必要です。
+生成されるコマンドにも、実行時に一意なキャッシュバスターが付与されます。
 
 ### ⚡ GitHub Actions の例
 

@@ -43,7 +43,8 @@ if [ -z "$RELEASE_VERSION" ] || [ -z "$PROJECT_NAME" ] || [ -z "$ASSETS_VERSION"
 fi
 
 ASSET_FILENAME="${PROJECT_NAME}-assets-${ASSETS_VERSION}.tar.zst"
-DOWNLOAD_URL="https://github.com/${REPO}/releases/download/${RELEASE_VERSION}/${ASSET_FILENAME}"
+CACHE_BUST="$(date +%s)-$$-${RANDOM}"
+DOWNLOAD_URL="https://github.com/${REPO}/releases/download/${RELEASE_VERSION}/${ASSET_FILENAME}?cachebust=${CACHE_BUST}"
 
 echo "======================================"
 echo "Downloading Assets"

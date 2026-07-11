@@ -56,6 +56,8 @@ You can automate fetching the latest test assets directly within your own projec
    mise run test-assets:download --output-dir ./my/custom/path v2025.09 kiarina-python v1.0.0
    ```
 
+The downloader adds a unique cache-busting query parameter to each request so that a recently replaced GitHub Release asset is fetched immediately instead of a stale CDN response.
+
 ### One-line Download Command
 
 Generate a copy-pasteable one-line command to download and extract an asset:
@@ -67,10 +69,11 @@ mise run test-assets:download-command
 Example output:
 
 ```sh
-set -o pipefail; mkdir -p assets && curl -fsSL https://github.com/kiarina/test-assets/releases/download/v2026.07/labs-assets-v1.0.0.tar.zst | tar --use-compress-program=unzstd --strip-components=1 -xf - -C assets
+set -o pipefail; mkdir -p assets && curl -fsSL https://github.com/kiarina/test-assets/releases/download/v2026.07/labs-assets-v1.0.0.tar.zst\?cachebust="$(date +%s)-$$-$RANDOM" | tar --use-compress-program=unzstd --strip-components=1 -xf - -C assets
 ```
 
 Requires the `curl`, `tar`, and `unzstd` commands.
+The generated command also adds a unique cache-busting query parameter when it runs.
 
 ### ⚡ GitHub Actions Example
 

@@ -40,5 +40,5 @@ prompt_value OUTPUT_DIR "$OUTPUT_DIR"
 ASSET_FILENAME="${PROJECT_NAME}-assets-${ASSETS_VERSION}.tar.zst"
 DOWNLOAD_URL="https://github.com/${REPO}/releases/download/${RELEASE_VERSION}/${ASSET_FILENAME}"
 
-printf 'set -o pipefail; mkdir -p %q && curl -fsSL %q | tar --use-compress-program=unzstd --strip-components=1 -xf - -C %q\n' \
-    "$OUTPUT_DIR" "$DOWNLOAD_URL" "$OUTPUT_DIR"
+printf 'set -o pipefail; mkdir -p %q && curl -fsSL %q"$(date +%%s)-$$-$RANDOM" | tar --use-compress-program=unzstd --strip-components=1 -xf - -C %q\n' \
+    "$OUTPUT_DIR" "${DOWNLOAD_URL}?cachebust=" "$OUTPUT_DIR"
