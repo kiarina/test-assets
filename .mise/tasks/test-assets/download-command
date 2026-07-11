@@ -4,7 +4,7 @@
 set -e
 
 REPO="${TEST_SETTINGS_REPO:-kiarina/test-assets}"
-RELEASE_VERSION="${TEST_SETTINGS_RELEASE_VERSION:-v2026.07}"
+RELEASE_VERSION="${TEST_SETTINGS_RELEASE_VERSION:-v1}"
 PROJECT_NAME="${TEST_SETTINGS_PROJECT_NAME:-labs}"
 ASSET_MAJOR="${TEST_SETTINGS_ASSET_MAJOR:-v1}"
 OUTPUT_DIR="${TEST_SETTINGS_OUTPUT_DIR:-assets}"
@@ -36,6 +36,11 @@ prompt_value RELEASE_VERSION "$RELEASE_VERSION"
 prompt_value PROJECT_NAME "$PROJECT_NAME"
 prompt_value ASSET_MAJOR "$ASSET_MAJOR"
 prompt_value OUTPUT_DIR "$OUTPUT_DIR"
+
+if [[ ! "$RELEASE_VERSION" =~ ^v[1-9][0-9]*$ ]]; then
+    echo "Error: RELEASE_VERSION must use the format v<positive-integer> (e.g. v1)." >&2
+    exit 1
+fi
 
 if [[ ! "$ASSET_MAJOR" =~ ^v[1-9][0-9]*$ ]]; then
     echo "Error: ASSET_MAJOR must use the format v<positive-integer> (e.g. v1)." >&2

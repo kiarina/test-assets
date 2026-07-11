@@ -24,12 +24,12 @@ jobs:
         with:
           path: tests/assets
           # Increment r1 whenever files are appended to this asset major.
-          key: test-assets-v2025.09-kiarina-python-v1-r1
+          key: test-assets-v1-kiarina-python-v1-r1
 
       # Download and extract assets using the automated script
       - name: Download test assets
         if: steps.cache-assets.outputs.cache-hit != 'true'
-        run: mise run test-assets:download v2025.09 kiarina-python v1
+        run: mise run test-assets:download v1 kiarina-python v1
 
       # Run your actual tests here
       - name: Run tests

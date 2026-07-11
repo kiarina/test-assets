@@ -9,7 +9,7 @@ VERSION=$1
 if [ -z "$VERSION" ]; then
     if command -v fzf &> /dev/null; then
         echo "No version specified. Please select a version from release/:"
-        VERSION=$(ls -1 release/ 2>/dev/null | sort -r | fzf --prompt="Select version: " || true)
+        VERSION=$(ls -1 release/ 2>/dev/null | awk '/^v[1-9][0-9]*$/' | sort -Vr | fzf --prompt="Select version: " || true)
         if [ -z "$VERSION" ]; then
             echo "Error: No version selected."
             exit 1
@@ -17,7 +17,7 @@ if [ -z "$VERSION" ]; then
     else
         echo "No version specified. Please select a version from release/:"
         # Use array to safely handle paths
-        versions=($(ls -1 release/ 2>/dev/null | sort -r || true))
+        versions=($(ls -1 release/ 2>/dev/null | awk '/^v[1-9][0-9]*$/' | sort -Vr || true))
         
         if [ ${#versions[@]} -eq 0 ]; then
             echo "Error: No versions found in release/ directory. Did you run the build task first?"
@@ -33,6 +33,11 @@ if [ -z "$VERSION" ]; then
             fi
         done
     fi
+fi
+
+if [[ ! "$VERSION" =~ ^v[1-9][0-9]*$ ]]; then
+    echo "Error: Release version must use the format v<positive-integer> (e.g. v1)."
+    exit 1
 fi
 
 RELEASE_DIR="release/$VERSION"

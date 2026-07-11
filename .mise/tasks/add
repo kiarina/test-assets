@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # mise description: Add a new asset directory and manifest entry to a release
 # Usage: mise run add [<release-version> <project-name> <asset-major>]
-# Example: mise run add v2025.09 kiarina-python v1
+# Example: mise run add v1 kiarina-python v1
 
 set -e
 
@@ -15,21 +15,21 @@ elif [ "$#" -eq 3 ]; then
     ASSET_MAJOR=$3
 else
     echo "Usage: mise run add <release-version> <project-name> <asset-major>"
-    echo "Example: mise run add v2025.09 kiarina-python v1"
+    echo "Example: mise run add v1 kiarina-python v1"
     echo "         mise run add (interactively select all)"
     exit 1
 fi
 if [ -z "$VERSION" ]; then
     if command -v fzf &> /dev/null; then
         echo "Please select a release version from src/:"
-        VERSION=$(ls -1 src/ 2>/dev/null | sort -r | fzf --prompt="Select release: " || true)
+        VERSION=$(ls -1 src/ 2>/dev/null | awk '/^v[1-9][0-9]*$/' | sort -Vr | fzf --prompt="Select release: " || true)
         if [ -z "$VERSION" ]; then
             echo "Error: No release selected."
             exit 1
         fi
     else
         echo "Please select a release version from src/:"
-        versions=($(ls -1 src/ 2>/dev/null | sort -r || true))
+        versions=($(ls -1 src/ 2>/dev/null | awk '/^v[1-9][0-9]*$/' | sort -Vr || true))
         if [ ${#versions[@]} -eq 0 ]; then
             echo "Error: No versions found in src/"
             exit 1
@@ -43,6 +43,11 @@ if [ -z "$VERSION" ]; then
             fi
         done
     fi
+fi
+
+if [[ ! "$VERSION" =~ ^v[1-9][0-9]*$ ]]; then
+    echo "Error: Release version must use the format v<positive-integer> (e.g. v1)."
+    exit 1
 fi
 
 if [ -z "$PROJECT_NAME" ]; then

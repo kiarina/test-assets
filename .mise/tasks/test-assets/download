@@ -2,7 +2,7 @@
 # mise description: Download and extract shared test assets
 # For detailed documentation, see: https://github.com/kiarina/test-assets
 # Usage: mise run test-assets:download [--output-dir <dir>] <release-version> <project-name> <asset-major>
-# Example: mise run test-assets:download v2025.09 kiarina-python v1
+# Example: mise run test-assets:download v1 kiarina-python v1
 
 set -e
 
@@ -11,7 +11,7 @@ set -e
 # -----------------------------------------------------------------------------
 # You can hardcode these values here so the script can be run without arguments.
 REPO="kiarina/test-assets"
-RELEASE_VERSION=""  # e.g. "v2026.06"
+RELEASE_VERSION=""  # e.g. "v1"
 PROJECT_NAME=""     # e.g. "my-project"
 ASSET_MAJOR=""      # e.g. "v1"
 OUTPUT_DIR="tests/assets"
@@ -36,9 +36,14 @@ if [ "$#" -ge 3 ]; then ASSET_MAJOR=$3; fi
 
 if [ -z "$RELEASE_VERSION" ] || [ -z "$PROJECT_NAME" ] || [ -z "$ASSET_MAJOR" ]; then
     echo "Usage: mise run test-assets:download [--output-dir <dir>] <release-version> <project-name> <asset-major>"
-    echo "Example: mise run test-assets:download v2025.09 kiarina-python v1"
+    echo "Example: mise run test-assets:download v1 kiarina-python v1"
     echo ""
     echo "Alternatively, you can edit the variables at the top of this script to run without arguments."
+    exit 1
+fi
+
+if [[ ! "$RELEASE_VERSION" =~ ^v[1-9][0-9]*$ ]]; then
+    echo "Error: Release version must use the format v<positive-integer> (e.g. v1)."
     exit 1
 fi
 

@@ -10,13 +10,15 @@
 
 ## 📦 About Test Assets
 
-このリポジトリのテストアセットは、**リリースバージョン (Release Version)** と **アセット名 (Asset Name)** の組み合わせで管理されます。これにより、利用側のプロジェクトは必要なデータだけを選択的にダウンロードし、安定したスナップショットに固定（ピン留め）することができます。
+このリポジトリのテストアセットは、**リリースバージョン (Release Version)** と **アセット名 (Asset Name)** の組み合わせで管理されます。どちらもメジャーバージョンだけの互換性ラインであり、リリースバージョンはアセットの存在を、アセットメジャーは既存ファイルを保証します。
 
 ### 🔑 Release Version (Versioning Policy)
-リリースバージョンは配布スナップショットを識別します。既存アセットの同じメジャーバージョンへファイルを追加してアーカイブを差し替えると、リリースの内容は増えることがあります。
-- バージョンは `vYYYY.MM` または `vYYYY.MM.DD` の形式に従います（例: `v2025.09`）。
+リリースバージョンは、公開するアセット集合の互換性を定義します。
+- バージョンは正のメジャー番号だけを使用します：`v1`、`v2` など。
 - 各リリースには、1つ以上のアセットアーカイブ (`*.tar.zst`)、チェックサムファイル (`SHA256SUMS`)、および内容を説明する `MANIFEST.md` が含まれます。
-- 各利用プロジェクトは、リリースバージョンとアセットのメジャーバージョンを明示的に**ピン留め**してください。これにより対象のアセット系列は固定されますが、その系列内の内容が不変であることは保証されません。
+- 同じリリースバージョン内では、アセットアーカイブの追加と更新が可能です。
+- 公開済みのアセットアーカイブを同じリリースバージョンから削除してはいけません。アセットを削除する場合は、リリースバージョンを上げて新しいリリースラインを作成します。
+- 各利用プロジェクトは、リリースバージョンとアセットメジャーを明示的に**ピン留め**してください。追加によってアーカイブを差し替えるため、どちらのラインもアーカイブのバイト単位の同一性は保証しません。
 
 ### 🏷️ Asset Name (Naming Convention)
 リリース内の個々のアセットアーカイブは、メジャーバージョンだけを使って命名します：
@@ -30,7 +32,7 @@
 ### 🗂 Example Structure
 リリース内部のレイアウトは以下のようになっています：
 ```
-v2025.09/
+v1/
   ├─ kiarina-python-assets-v1.tar.zst
   ├─ SHA256SUMS
   └─ MANIFEST.md   # ファイルの説明
@@ -49,12 +51,12 @@ v2025.09/
 1. ご自身のプロジェクトに `.mise/tasks/test-assets/download` を作成し、[こちらのスクリプト](https://github.com/kiarina/test-assets/blob/main/.mise/tasks/test-assets/download) の内容をコピー＆ペーストしてください。
 2. 以下のコマンドを実行すると、アセットのダウンロードと展開が行われます：
    ```sh
-   mise run test-assets:download v2025.09 kiarina-python v1
+   mise run test-assets:download v1 kiarina-python v1
    ```
    デフォルトでは `./tests/assets` に展開され、自動的に `.gitignore` に追記されます。
 3. 展開先ディレクトリを変更したい場合は、`--output-dir` フラグを使用します：
    ```sh
-   mise run test-assets:download --output-dir ./my/custom/path v2025.09 kiarina-python v1
+   mise run test-assets:download --output-dir ./my/custom/path v1 kiarina-python v1
    ```
 
 ダウンローダーはリクエストごとに一意なキャッシュバスターをクエリパラメータとして付与します。これにより、GitHub Release のアセットを差し替えた直後でも、CDN の古いレスポンスではなく最新のアセットを取得できます。
@@ -70,7 +72,7 @@ mise run test-assets:download-command
 出力例：
 
 ```sh
-set -o pipefail; mkdir -p assets && curl -fsSL https://github.com/kiarina/test-assets/releases/download/v2026.07/labs-assets-v1.tar.zst\?cachebust="$(date +%s)-$$-$RANDOM" | tar --use-compress-program=unzstd --strip-components=1 -xf - -C assets
+set -o pipefail; mkdir -p assets && curl -fsSL https://github.com/kiarina/test-assets/releases/download/v1/labs-assets-v1.tar.zst\?cachebust="$(date +%s)-$$-$RANDOM" | tar --use-compress-program=unzstd --strip-components=1 -xf - -C assets
 ```
 
 実行には `curl`、`tar`、`unzstd` コマンドが必要です。
@@ -91,16 +93,16 @@ set -o pipefail; mkdir -p assets && curl -fsSL https://github.com/kiarina/test-a
 **GitHub CLI を使用する場合:**
 ```sh
 mkdir -p tests/assets
-gh release download --repo kiarina/test-assets v2025.09 -p kiarina-python-assets-v1.tar.zst --dir tests/assets
+gh release download --repo kiarina/test-assets v1 -p kiarina-python-assets-v1.tar.zst --dir tests/assets
 tar --use-compress-program=unzstd -xvf tests/assets/kiarina-python-assets-v1.tar.zst -C tests/assets
 rm tests/assets/kiarina-python-assets-v1.tar.zst
 ```
 
 **curl / wget を使用する場合:**
 ```sh
-# 例: リリース v2025.09 からアセットをダウンロードする
+# 例: リリース v1 からアセットをダウンロードする
 curl -L -o kiarina-python-assets-v1.tar.zst \
-  "https://github.com/kiarina/test-assets/releases/download/v2025.09/kiarina-python-assets-v1.tar.zst?cachebust=$(date +%s)-$$-$RANDOM"
+  "https://github.com/kiarina/test-assets/releases/download/v1/kiarina-python-assets-v1.tar.zst?cachebust=$(date +%s)-$$-$RANDOM"
 ```
 
 ---
@@ -109,10 +111,14 @@ curl -L -o kiarina-python-assets-v1.tar.zst \
 
 このリポジトリを管理し、新しいアセットを追加・更新する手順です。
 
-### 📸 The Snapshot Model
+### 📸 The Compatibility Model
 
-このリポジトリは**スナップショット方式**を採用しています。新しいリリースを作成する際は、必ず**過去のリリースのアセットをすべて引き継ぎ**、そこに新しいアセットを追加・上書きします。
-**GitHub上の過去のリリースは絶対に削除しないでください。** 利用側のプロジェクトは特定のバージョンをピン留めしているため、過去のリリースを削除すると利用者のCIが壊れてしまいます。すべてを引き継ぐことで、1つのバージョンを指定するだけで必要な全アセットが揃う状態を維持します。
+このリポジトリは、二層の追加専用の互換性境界を採用します：
+
+- **リリースバージョン**は、公開済みのアセット名が引き続き利用できることを保証します。アセットの追加とアーカイブの更新は可能ですが、アセットを削除する場合は次のリリースバージョンが必要です。
+- **アセットメジャー**は、既存ファイルのパスと内容が引き続き利用できることを保証します。ファイルの追加は可能ですが、変更、差し替え、移動、削除を行う場合は次のアセットメジャーが必要です。
+
+次のリリースバージョンを作成する際は、前のリリースを引き継ぎ、意図的に互換性を壊す対象のアセットだけを削除します。**GitHub上の過去のリリースは絶対に削除しないでください。** 利用者が引き続き依存している可能性があります。
 
 ### ⚙️ Setup Workspace
 
@@ -121,50 +127,50 @@ curl -L -o kiarina-python-assets-v1.tar.zst \
 GitHub Releases から最新のアセットをダウンロードし、`src/` ディレクトリを再構築するには以下のコマンドを実行してください：
 ```sh
 make setup
-# または引数指定で実行: mise run setup v2025.10
+# または引数指定で実行: mise run setup v1
 ```
 ※このコマンドを実行するには GitHub CLI (`gh`) の認証が必要です。
 
 ### 🚀 How to Release New Assets
 
-スナップショット方式を簡単に運用するためのヘルパータスクが用意されています。
+互換性モデルを簡単に運用するためのヘルパータスクが用意されています。
 
 1. **新しいリリースバージョンの初期化**:
-   新しいバージョンのワークスペースを作成します。自動的に最新のリリースをダウンロードし、過去のアセットをすべて新しいディレクトリにコピーしてベースラインを構築します。
+   既存アセットを削除する必要がある場合にのみ、新しいリリースラインを作成します。最新リリースを自動的にダウンロードして新しいバージョンディレクトリへコピーするため、その後、不要なアセットディレクトリをローカルで削除します。
    ```sh
    make create
-   # または引数指定で実行: mise run create v2025.10
+   # または引数指定で実行: mise run create v2
    ```
 
 2. **新規アセットディレクトリの追加**:
    ```sh
    make add
-   # または引数指定で実行: mise run add v2025.10 kiarina-python v1
+   # または引数指定で実行: mise run add v1 kiarina-python v1
    # その後、作成されたディレクトリに実ファイルを配置してください。
    ```
 
    同じメジャーバージョンへ後から追加する場合は、既存のディレクトリへ新しいファイルを直接配置します。`add` の再実行は不要です：
    ```sh
-   cp new-test-file.jpg src/v2025.10/kiarina-python-assets-v1/
+   cp new-test-file.jpg src/v1/kiarina-python-assets-v1/
    ```
 
    ファイルの変更、差し替え、移動、削除が必要な場合は、次のメジャーバージョンを作成します：
    ```sh
-   mise run add v2025.10 kiarina-python v2
+   mise run add v1 kiarina-python v2
    ```
 
 3. **リリースのビルド**:
    ビルドコマンドを実行し、圧縮された `.tar.zst` アーカイブとチェックサムを生成します。この際、アセットの実際の容量が計算され、`MANIFEST.md` のプレースホルダーに自動で書き込まれます。
    ```sh
    make build
-   # または引数指定で実行: mise run build v2025.10
+   # または引数指定で実行: mise run build v1
    ```
 
 4. **GitHub への公開**:
    自動化された `release` タスクを使って、生成されたアセットを GitHub Release にアップロードします。
    ```sh
    make release
-   # または引数指定で実行: mise run release v2025.10
+   # または引数指定で実行: mise run release v1
    ```
 
 既存メジャーバージョンへの追加専用の変更であれば、ファイルを配置し、`build`、`release` を実行するだけで完了します。

@@ -10,13 +10,15 @@ Instead, they are published as [GitHub Release assets](https://github.com/kiarin
 
 ## 📦 About Test Assets
 
-Test assets in this repository are managed by a combination of a **Release Version** and an **Asset Name**. This structure allows consuming projects to selectively download exactly what they need while pinning to a stable snapshot.
+Test assets in this repository are managed by a combination of a **Release Version** and an **Asset Name**. Both are major-only compatibility lines: the release version guarantees asset availability, while the asset major guarantees existing files.
 
 ### 🔑 Release Version (Versioning Policy)
-The release version identifies a distribution snapshot. A release may grow when files are appended to an existing asset major and its archive is replaced.
-- Versions follow the format `vYYYY.MM` or `vYYYY.MM.DD` (e.g., `v2025.09`).
+The release version defines compatibility for the set of published assets.
+- Versions use only a positive major number: `v1`, `v2`, and so on.
 - Each release contains one or more asset archives (`*.tar.zst`), a checksum file (`SHA256SUMS`), and optionally a `MANIFEST.md` describing the contents.
-- Consuming projects should **pin the release version** and asset major explicitly. This selects the intended asset line, but does not guarantee immutable contents within that line.
+- Within the same release version, asset archives may be added or updated.
+- Published asset archives must not be removed from a release version. To remove an asset, increment the release version and create a new release line.
+- Consuming projects should **pin the release version** and asset major explicitly. Neither line guarantees byte-for-byte archive identity because append-only additions replace archives in place.
 
 ### 🏷️ Asset Name (Naming Convention)
 Within a release, individual asset archives use only a major version:
@@ -30,7 +32,7 @@ Within a release, individual asset archives use only a major version:
 ### 🗂 Example Structure
 Here is how a release looks internally:
 ```
-v2025.09/
+v1/
   ├─ kiarina-python-assets-v1.tar.zst
   ├─ SHA256SUMS
   └─ MANIFEST.md   # file descriptions
@@ -49,12 +51,12 @@ You can automate fetching the latest test assets directly within your own projec
 1. Create a `.mise/tasks/test-assets/download` file in your project and copy the contents from [our download script](https://github.com/kiarina/test-assets/blob/main/.mise/tasks/test-assets/download).
 2. Run the task to download and extract the assets:
    ```sh
-   mise run test-assets:download v2025.09 kiarina-python v1
+   mise run test-assets:download v1 kiarina-python v1
    ```
    By default, this will extract the assets into `./tests/assets` and automatically add it to your `.gitignore`.
 3. To specify a different output directory, use the `--output-dir` flag:
    ```sh
-   mise run test-assets:download --output-dir ./my/custom/path v2025.09 kiarina-python v1
+   mise run test-assets:download --output-dir ./my/custom/path v1 kiarina-python v1
    ```
 
 The downloader adds a unique cache-busting query parameter to each request so that a recently replaced GitHub Release asset is fetched immediately instead of a stale CDN response.
@@ -70,7 +72,7 @@ mise run test-assets:download-command
 Example output:
 
 ```sh
-set -o pipefail; mkdir -p assets && curl -fsSL https://github.com/kiarina/test-assets/releases/download/v2026.07/labs-assets-v1.tar.zst\?cachebust="$(date +%s)-$$-$RANDOM" | tar --use-compress-program=unzstd --strip-components=1 -xf - -C assets
+set -o pipefail; mkdir -p assets && curl -fsSL https://github.com/kiarina/test-assets/releases/download/v1/labs-assets-v1.tar.zst\?cachebust="$(date +%s)-$$-$RANDOM" | tar --use-compress-program=unzstd --strip-components=1 -xf - -C assets
 ```
 
 Requires the `curl`, `tar`, and `unzstd` commands.
@@ -91,16 +93,16 @@ If you prefer not to use the automated script, you can download the assets manua
 **Using GitHub CLI:**
 ```sh
 mkdir -p tests/assets
-gh release download --repo kiarina/test-assets v2025.09 -p kiarina-python-assets-v1.tar.zst --dir tests/assets
+gh release download --repo kiarina/test-assets v1 -p kiarina-python-assets-v1.tar.zst --dir tests/assets
 tar --use-compress-program=unzstd -xvf tests/assets/kiarina-python-assets-v1.tar.zst -C tests/assets
 rm tests/assets/kiarina-python-assets-v1.tar.zst
 ```
 
 **Using curl / wget:**
 ```sh
-# Example: download assets from release v2025.09
+# Example: download assets from release v1
 curl -L -o kiarina-python-assets-v1.tar.zst \
-  "https://github.com/kiarina/test-assets/releases/download/v2025.09/kiarina-python-assets-v1.tar.zst?cachebust=$(date +%s)-$$-$RANDOM"
+  "https://github.com/kiarina/test-assets/releases/download/v1/kiarina-python-assets-v1.tar.zst?cachebust=$(date +%s)-$$-$RANDOM"
 ```
 
 ---
@@ -109,10 +111,14 @@ curl -L -o kiarina-python-assets-v1.tar.zst \
 
 If you are a maintainer of this repository, here is how you work with the assets.
 
-### 📸 The Snapshot Model
+### 📸 The Compatibility Model
 
-This repository uses a **Snapshot Model**. Every new release should include **all** assets from the previous release, plus any new or updated assets. 
-**Never delete past releases on GitHub.** Consuming projects pin specific versions, and deleting past releases will break their CI pipelines. By inheriting past assets, we ensure that a single version tag contains everything a consumer might need at that point in time.
+This repository uses two append-only compatibility boundaries:
+
+- A **release version** guarantees that published asset names remain available. Assets may be added or their archives updated, but removing an asset requires the next release version.
+- An **asset major** guarantees that existing file paths and contents remain available. Files may be added, but modifying, replacing, moving, or deleting a file requires the next asset major.
+
+When creating the next release version, inherit the previous release and remove only the assets that intentionally require the compatibility break. **Never delete past releases on GitHub.** Consumers may still depend on them.
 
 ### ⚙️ Setup Workspace
 
@@ -121,50 +127,50 @@ Since the actual asset files in `src/` are ignored by git to keep the repository
 To download and extract the latest assets back into the `src/` directory, run:
 ```sh
 make setup
-# or with arguments: mise run setup v2025.10
+# or with arguments: mise run setup v1
 ```
 This requires the GitHub CLI (`gh`) to be authenticated.
 
 ### 🚀 How to Release New Assets
 
-We provide helper tasks to make the snapshot model easy to maintain.
+We provide helper tasks to make the compatibility model easy to maintain.
 
 1. **Initialize a New Release Version**:
-   Create a new version workspace. This will automatically download the latest release and copy its assets to the new version's directory to act as your baseline.
+   Create a new release line only when an existing asset must be removed. This automatically downloads the latest release and copies its assets to the new version directory as a baseline; then remove the unwanted asset directory locally.
    ```sh
    make create
-   # or with arguments: mise run create v2025.10
+   # or with arguments: mise run create v2
    ```
 
 2. **Add a New Asset Directory**:
    ```sh
    make add
-   # or with arguments: mise run add v2025.10 kiarina-python v1
+   # or with arguments: mise run add v1 kiarina-python v1
    # You can then place your raw files into the created directory.
    ```
 
    For later additions to the same major version, place new files directly in the existing directory. Do not run `add` again:
    ```sh
-   cp new-test-file.jpg src/v2025.10/kiarina-python-assets-v1/
+   cp new-test-file.jpg src/v1/kiarina-python-assets-v1/
    ```
 
    If a file must be modified, replaced, moved, or deleted, create the next major version instead:
    ```sh
-   mise run add v2025.10 kiarina-python v2
+   mise run add v1 kiarina-python v2
    ```
 
 3. **Build the Release**:
    Run the build command to generate the compressed `.tar.zst` and checksums. This will also automatically calculate the uncompressed size of your assets and inject it into the `MANIFEST.md`.
    ```sh
    make build
-   # or with arguments: mise run build v2025.10
+   # or with arguments: mise run build v1
    ```
 
 4. **Publish to GitHub**:
    Upload the contents to GitHub Releases using the automated `release` task.
    ```sh
    make release
-   # or with arguments: mise run release v2025.10
+   # or with arguments: mise run release v1
    ```
 
 For an append-only addition to an existing major version, the complete routine is simply: place the file, run `build`, then run `release`.
