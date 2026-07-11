@@ -49,15 +49,29 @@ v1/
 提供されているテストアセットを、ご自身のプロジェクト内で自動的に取得・展開するためのスクリプトを用意しています。
 
 1. ご自身のプロジェクトに `.mise/tasks/test-assets/download` を作成し、[こちらのスクリプト](https://github.com/kiarina/test-assets/blob/main/.mise/tasks/test-assets/download) の内容をコピー＆ペーストしてください。
-2. 以下のコマンドを実行すると、アセットのダウンロードと展開が行われます：
+2. 引数なしでタスクを実行すると、値を自動解決してアセットをダウンロード・展開します：
    ```sh
-   mise run test-assets:download v1 kiarina-python v1
+   mise run test-assets:download
    ```
    デフォルトでは `./tests/assets` に展開され、自動的に `.gitignore` に追記されます。
-3. 展開先ディレクトリを変更したい場合は、`--output-dir` フラグを使用します：
+3. 左から順に一部の値だけを上書きすることも、すべて明示することもできます：
    ```sh
-   mise run test-assets:download --output-dir ./my/custom/path v1 kiarina-python v1
+   mise run test-assets:download v1
+   mise run test-assets:download v1 kiarina-python
+   mise run test-assets:download v1 kiarina-python v1
    ```
+4. 展開先ディレクトリを変更したい場合は、`--output-dir` フラグを使用します：
+   ```sh
+   mise run test-assets:download --output-dir ./my/custom/path
+   ```
+
+未指定の値は次の順序で解決します：
+
+- **リリースバージョン**: GitHub REST API が返す最新リリースを使用します。
+- **プロジェクト名**: 現在の Git リポジトリの `origin` リモートからリポジトリ名を取得します。
+- **アセットメジャー**: 選択したリリース内で `{project-name}-assets-v<major>.tar.zst` に一致するアセットを検索し、数値として最大のメジャーを使用します。
+
+タスクは、自動解決または明示指定されたアセットがリリースに存在することも検証します。REST API を認証し、未認証時の低いレート制限を避けるには `GITHUB_TOKEN` を設定してください。自動解決には `jq` と、`curl` または `wget` のいずれかが必要です。ダウンロードと展開には、さらに `tar` と `unzstd` が必要です。
 
 ダウンローダーはリクエストごとに一意なキャッシュバスターをクエリパラメータとして付与します。これにより、GitHub Release のアセットを差し替えた直後でも、CDN の古いレスポンスではなく最新のアセットを取得できます。
 

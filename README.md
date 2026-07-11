@@ -49,15 +49,29 @@ If you want to use these assets in your project, you have a few ways to download
 You can automate fetching the latest test assets directly within your own project by copying our ready-to-use download script.
 
 1. Create a `.mise/tasks/test-assets/download` file in your project and copy the contents from [our download script](https://github.com/kiarina/test-assets/blob/main/.mise/tasks/test-assets/download).
-2. Run the task to download and extract the assets:
+2. Run the task without arguments to resolve and download the assets automatically:
    ```sh
-   mise run test-assets:download v1 kiarina-python v1
+   mise run test-assets:download
    ```
    By default, this will extract the assets into `./tests/assets` and automatically add it to your `.gitignore`.
-3. To specify a different output directory, use the `--output-dir` flag:
+3. You can override any value from left to right, or specify all values explicitly:
    ```sh
-   mise run test-assets:download --output-dir ./my/custom/path v1 kiarina-python v1
+   mise run test-assets:download v1
+   mise run test-assets:download v1 kiarina-python
+   mise run test-assets:download v1 kiarina-python v1
    ```
+4. To specify a different output directory, use the `--output-dir` flag:
+   ```sh
+   mise run test-assets:download --output-dir ./my/custom/path
+   ```
+
+Missing values are resolved in this order:
+
+- **Release version**: use the latest release returned by the GitHub REST API.
+- **Project name**: use the repository name parsed from the current Git repository's `origin` remote.
+- **Asset major**: find assets matching `{project-name}-assets-v<major>.tar.zst` in the selected release and use the highest numeric major.
+
+The task validates that the resolved or explicitly selected asset exists in the release. Set `GITHUB_TOKEN` to authenticate REST API requests and avoid the lower unauthenticated rate limit. Automatic resolution requires `jq` and either `curl` or `wget`. Downloading and extraction additionally require `tar` and `unzstd`.
 
 The downloader adds a unique cache-busting query parameter to each request so that a recently replaced GitHub Release asset is fetched immediately instead of a stale CDN response.
 
