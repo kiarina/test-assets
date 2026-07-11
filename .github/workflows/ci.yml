@@ -23,7 +23,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: tests/assets
-          # Increment r1 whenever files are appended to this asset major.
+          # Increment r1 whenever files are appended to this asset version.
           key: test-assets-v1-kiarina-python-v1-r1
 
       # Download and extract assets using the automated script

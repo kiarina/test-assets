@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # mise description: Add a new asset directory and manifest entry to a release
-# Usage: mise run add [<release-version> <project-name> <asset-major>]
+# Usage: mise run add [<release-version> <project-name> <asset-version>]
 # Example: mise run add v1 kiarina-python v1
 
 set -e
@@ -8,13 +8,13 @@ set -e
 if [ "$#" -eq 0 ]; then
     VERSION=""
     PROJECT_NAME=""
-    ASSET_MAJOR=""
+    ASSET_VERSION=""
 elif [ "$#" -eq 3 ]; then
     VERSION=$1
     PROJECT_NAME=$2
-    ASSET_MAJOR=$3
+    ASSET_VERSION=$3
 else
-    echo "Usage: mise run add <release-version> <project-name> <asset-major>"
+    echo "Usage: mise run add <release-version> <project-name> <asset-version>"
     echo "Example: mise run add v1 kiarina-python v1"
     echo "         mise run add (interactively select all)"
     exit 1
@@ -58,21 +58,21 @@ if [ -z "$PROJECT_NAME" ]; then
     fi
 fi
 
-if [ -z "$ASSET_MAJOR" ]; then
-    read -p "Enter asset major (e.g. v1): " ASSET_MAJOR
-    if [ -z "$ASSET_MAJOR" ]; then
-        echo "Error: Asset major cannot be empty."
+if [ -z "$ASSET_VERSION" ]; then
+    read -p "Enter asset version (e.g. v1): " ASSET_VERSION
+    if [ -z "$ASSET_VERSION" ]; then
+        echo "Error: Asset version cannot be empty."
         exit 1
     fi
 fi
 
-if [[ ! "$ASSET_MAJOR" =~ ^v[1-9][0-9]*$ ]]; then
-    echo "Error: Asset major must use the format v<positive-integer> (e.g. v1)."
+if [[ ! "$ASSET_VERSION" =~ ^v[1-9][0-9]*$ ]]; then
+    echo "Error: Asset version must use the format v<positive-integer> (e.g. v1)."
     exit 1
 fi
 
 SRC_DIR="src/$VERSION"
-ASSET_NAME="${PROJECT_NAME}-assets-${ASSET_MAJOR}"
+ASSET_NAME="${PROJECT_NAME}-assets-${ASSET_VERSION}"
 ASSET_DIR="$SRC_DIR/$ASSET_NAME"
 
 if [ ! -d "$SRC_DIR" ]; then
@@ -110,7 +110,7 @@ else
 ## ${ASSET_NAME}.tar.zst
 
 - **Project**: ${PROJECT_NAME}
-- **Major Version**: ${ASSET_MAJOR}
+- **Version**: ${ASSET_VERSION}
 - **Description**: Test assets for the ${PROJECT_NAME} project.
 - **Uncompressed Size**: 0B
 EOF

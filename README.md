@@ -10,7 +10,7 @@ Instead, they are published as [GitHub Release assets](https://github.com/kiarin
 
 ## 📦 About Test Assets
 
-Test assets in this repository are managed by a combination of a **Release Version** and an **Asset Name**. Both are major-only compatibility lines: the release version guarantees asset availability, while the asset major guarantees existing files.
+Test assets in this repository are managed by a combination of a **Release Version** and an **Asset Name**. Both are major-only compatibility lines: the release version guarantees asset availability, while the asset version guarantees existing files.
 
 ### 🔑 Release Version (Versioning Policy)
 The release version defines compatibility for the set of published assets.
@@ -18,11 +18,11 @@ The release version defines compatibility for the set of published assets.
 - Each release contains one or more asset archives (`*.tar.zst`), a checksum file (`SHA256SUMS`), and optionally a `MANIFEST.md` describing the contents.
 - Within the same release version, asset archives may be added or updated.
 - Published asset archives must not be removed from a release version. To remove an asset, increment the release version and create a new release line.
-- Consuming projects should **pin the release version** and asset major explicitly. Neither line guarantees byte-for-byte archive identity because append-only additions replace archives in place.
+- Consuming projects should **pin the release version** and asset version explicitly. Neither line guarantees byte-for-byte archive identity because append-only additions replace archives in place.
 
 ### 🏷️ Asset Name (Naming Convention)
 Within a release, individual asset archives use only a major version:
-`{project-name}-assets-v{major}.tar.zst`
+`{project-name}-assets-{asset-version}.tar.zst`, where the asset version uses the format `v1`, `v2`, and so on.
 
 - Within the same major version, assets are **append-only**. Existing files must not be modified, replaced, moved, or deleted.
 - Additions are published by rebuilding and replacing the archive with the same name.
@@ -69,7 +69,7 @@ Missing values are resolved in this order:
 
 - **Release version**: use the latest release returned by the GitHub REST API.
 - **Project name**: use the repository name parsed from the current Git repository's `origin` remote.
-- **Asset major**: find assets matching `{project-name}-assets-v<major>.tar.zst` in the selected release and use the highest numeric major.
+- **Asset version**: find assets matching `{project-name}-assets-v<version>.tar.zst` in the selected release and use the highest numeric version.
 
 The task validates that the resolved or explicitly selected asset exists in the release. Set `GITHUB_TOKEN` to authenticate REST API requests and avoid the lower unauthenticated rate limit. Automatic resolution requires `jq` and either `curl` or `wget`. Downloading and extraction additionally require `tar` and `unzstd`.
 
@@ -130,7 +130,7 @@ If you are a maintainer of this repository, here is how you work with the assets
 This repository uses two append-only compatibility boundaries:
 
 - A **release version** guarantees that published asset names remain available. Assets may be added or their archives updated, but removing an asset requires the next release version.
-- An **asset major** guarantees that existing file paths and contents remain available. Files may be added, but modifying, replacing, moving, or deleting a file requires the next asset major.
+- An **asset version** guarantees that existing file paths and contents remain available. Asset versions contain only a major number. Files may be added, but modifying, replacing, moving, or deleting a file requires the next asset version.
 
 When creating the next release version, inherit the previous release and remove only the assets that intentionally require the compatibility break. **Never delete past releases on GitHub.** Consumers may still depend on them.
 
