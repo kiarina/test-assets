@@ -6,7 +6,7 @@ set -e
 REPO="${TEST_SETTINGS_REPO:-kiarina/test-assets}"
 RELEASE_VERSION="${TEST_SETTINGS_RELEASE_VERSION:-v2026.07}"
 PROJECT_NAME="${TEST_SETTINGS_PROJECT_NAME:-labs}"
-ASSETS_VERSION="${TEST_SETTINGS_ASSETS_VERSION:-v1.0.0}"
+ASSET_MAJOR="${TEST_SETTINGS_ASSET_MAJOR:-v1}"
 OUTPUT_DIR="${TEST_SETTINGS_OUTPUT_DIR:-assets}"
 
 cat >&2 <<EOF
@@ -17,7 +17,7 @@ Defaults can be overridden with environment variables:
   TEST_SETTINGS_REPO=$REPO
   TEST_SETTINGS_RELEASE_VERSION=$RELEASE_VERSION
   TEST_SETTINGS_PROJECT_NAME=$PROJECT_NAME
-  TEST_SETTINGS_ASSETS_VERSION=$ASSETS_VERSION
+  TEST_SETTINGS_ASSET_MAJOR=$ASSET_MAJOR
   TEST_SETTINGS_OUTPUT_DIR=$OUTPUT_DIR
 
 EOF
@@ -34,10 +34,15 @@ prompt_value() {
 prompt_value REPO "$REPO"
 prompt_value RELEASE_VERSION "$RELEASE_VERSION"
 prompt_value PROJECT_NAME "$PROJECT_NAME"
-prompt_value ASSETS_VERSION "$ASSETS_VERSION"
+prompt_value ASSET_MAJOR "$ASSET_MAJOR"
 prompt_value OUTPUT_DIR "$OUTPUT_DIR"
 
-ASSET_FILENAME="${PROJECT_NAME}-assets-${ASSETS_VERSION}.tar.zst"
+if [[ ! "$ASSET_MAJOR" =~ ^v[1-9][0-9]*$ ]]; then
+    echo "Error: ASSET_MAJOR must use the format v<positive-integer> (e.g. v1)." >&2
+    exit 1
+fi
+
+ASSET_FILENAME="${PROJECT_NAME}-assets-${ASSET_MAJOR}.tar.zst"
 DOWNLOAD_URL="https://github.com/${REPO}/releases/download/${RELEASE_VERSION}/${ASSET_FILENAME}"
 
 printf 'set -o pipefail; mkdir -p %q && curl -fsSL %q"$(date +%%s)-$$-$RANDOM" | tar --use-compress-program=unzstd --strip-components=1 -xf - -C %q\n' \
