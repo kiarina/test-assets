@@ -134,6 +134,19 @@ This repository uses two append-only compatibility boundaries:
 
 When creating the next release version, inherit the previous release and remove only the assets that intentionally require the compatibility break. **Never delete past releases on GitHub.** Consumers may still depend on them.
 
+### 📝 Recommended File Naming
+
+This is a recommendation, not a requirement. Give asset files descriptive names that let maintainers understand their contents and important properties without opening them. The files currently under `src/` generally follow this pattern:
+
+`{content-description}[_{characteristics}][_{approximate-size}].{extension}`
+
+- Use lowercase `snake_case` for the content description.
+- Add characteristics that matter for the file type, such as image dimensions (`1024x1024`), row or line count (`13row`, `1027line`), page count (`3p`), speaker count (`2speaker`), duration (`14s`), frame rate (`24fps`), or sample rate (`16k`).
+- When useful, end the name with an approximate file size using a lowercase unit such as `b`, `kb`, or `mb`.
+- Include only useful characteristics; the filename does not need to contain every available property.
+
+Examples from the current assets include `apple_1024x1024_138kb.jpg`, `monthly_temperature_13row_141b.csv`, `conversation_2speaker_14s_16k.mp3`, and `shape_animation_1600x900_24fps_13s_4400kb.mp4`.
+
 ### ⚙️ Setup Workspace
 
 Since the actual asset files in `src/` are ignored by git to keep the repository lightweight, you will need to reconstruct the workspace after cloning this repository.
