@@ -11,16 +11,16 @@ jobs:
   ci:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # Install mise (required to run the download script)
       - name: Install mise
-        uses: jdx/mise-action@v2
+        uses: jdx/mise-action@v4
 
       # Restore assets cache if available
       - name: Cache test assets
         id: cache-assets
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: tests/assets
           # Increment r1 whenever files are appended to this asset version.
