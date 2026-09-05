@@ -17,6 +17,9 @@ if [ -z "$VERSION" ]; then
     else
         echo "No version specified. Please select a version from release/:"
         # Use array to safely handle paths
+        # Version tokens never contain whitespace, and mapfile is unavailable in
+        # the Bash 3.2 shipped with macOS, so word splitting is intentional here.
+        # shellcheck disable=SC2207
         versions=($(ls -1 release/ 2>/dev/null | awk '/^v[1-9][0-9]*$/' | sort -Vr || true))
         
         if [ ${#versions[@]} -eq 0 ]; then
@@ -65,14 +68,13 @@ if gh release view "$VERSION" >/dev/null 2>&1; then
 else
     echo "Creating new release $VERSION..."
     # Optionally use MANIFEST.md as release notes if it exists
-    NOTES_OPT=""
     if [ -f "$RELEASE_DIR/MANIFEST.md" ]; then
-        NOTES_OPT="--notes-file $RELEASE_DIR/MANIFEST.md"
+        NOTES_OPT=(--notes-file "$RELEASE_DIR/MANIFEST.md")
     else
-        NOTES_OPT="--generate-notes"
+        NOTES_OPT=(--generate-notes)
     fi
-    
-    gh release create "$VERSION" "$RELEASE_DIR"/* -t "$VERSION" $NOTES_OPT
+
+    gh release create "$VERSION" "$RELEASE_DIR"/* -t "$VERSION" "${NOTES_OPT[@]}"
 fi
 
 echo "======================================"

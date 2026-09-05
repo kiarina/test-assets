@@ -29,6 +29,9 @@ if [ -z "$VERSION" ]; then
         fi
     else
         echo "Please select a release version from src/:"
+        # Version tokens never contain whitespace, and mapfile is unavailable in
+        # the Bash 3.2 shipped with macOS, so word splitting is intentional here.
+        # shellcheck disable=SC2207
         versions=($(ls -1 src/ 2>/dev/null | awk '/^v[1-9][0-9]*$/' | sort -Vr || true))
         if [ ${#versions[@]} -eq 0 ]; then
             echo "Error: No versions found in src/"
@@ -51,7 +54,7 @@ if [[ ! "$VERSION" =~ ^v[1-9][0-9]*$ ]]; then
 fi
 
 if [ -z "$PROJECT_NAME" ]; then
-    read -p "Enter project name (e.g. kiarina-python): " PROJECT_NAME
+    read -r -p "Enter project name (e.g. kiarina-python): " PROJECT_NAME
     if [ -z "$PROJECT_NAME" ]; then
         echo "Error: Project name cannot be empty."
         exit 1
@@ -59,7 +62,7 @@ if [ -z "$PROJECT_NAME" ]; then
 fi
 
 if [ -z "$ASSET_VERSION" ]; then
-    read -p "Enter asset version (e.g. v1): " ASSET_VERSION
+    read -r -p "Enter asset version (e.g. v1): " ASSET_VERSION
     if [ -z "$ASSET_VERSION" ]; then
         echo "Error: Asset version cannot be empty."
         exit 1

@@ -1,9 +1,12 @@
-.PHONY: setup create add build release download
+.PHONY: setup create add build release download lint
 
 .DEFAULT_GOAL := build
 
 setup:
 	@mise run setup
+
+lint:
+	@mise run lint
 
 create:
 	@mise run create
